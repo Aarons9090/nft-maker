@@ -6,6 +6,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+
+
+    ui->textBrowser->append("Application started");
+    ui->textBrowser->append("Start by selecting folders with images");
 }
 
 MainWindow::~MainWindow()
@@ -19,7 +24,7 @@ void MainWindow::updateListWidget()
 
     widget->clear();
 
-    for(vector<QString> &vec: file_directories__){
+    for(vector<QString> &vec: fileDirectories__){
         for(QString const &str : vec){
             new QListWidgetItem(str, widget);
         }
@@ -29,9 +34,14 @@ void MainWindow::updateListWidget()
 
 bool MainWindow::combineImages()
 {
+    if(saveFilePath__.size() == 0){
+        ui->textBrowser->append("Select save file before creating images!");
+        return false;
+    }
+
     // number of arrays
     vector<vector<QString>> combinations;
-    int n = file_directories__.size();
+    int n = fileDirectories__.size();
 
     // to keep track of next element in each of
     // the n arrays
@@ -46,7 +56,7 @@ bool MainWindow::combineImages()
         // print current combination
 
         for (int i = 0; i < n; i++){
-            vec.push_back(file_directories__[i][indices[i]]);
+            vec.push_back(fileDirectories__[i][indices[i]]);
         }
 
         combinations.push_back(vec);
@@ -58,7 +68,7 @@ bool MainWindow::combineImages()
         // in that array
         int next = n - 1;
         while (next >= 0 &&
-              (indices[next] + 1 >= int(file_directories__[next].size())))
+              (indices[next] + 1 >= int(fileDirectories__[next].size())))
             next--;
 
         // no such array is found so no more
@@ -78,22 +88,18 @@ bool MainWindow::combineImages()
     }
 
     int counter = 1;
-    qDebug() << "combinations: " << combinations.size();
 
 
+    ui->textBrowser->append(QString::number(combinations.size()) + " combinations created");
 
 
-    QString fileName = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
-                                                         "/home",
-                                                         QFileDialog::ShowDirsOnly
-                                                         | QFileDialog::DontResolveSymlinks);
 
 
 
 
 
     for(vector<QString> &vec : combinations){
-        QString saveFileName = fileName+"/"+QString::number(counter)+".png";
+        QString saveFileName = saveFilePath__+"/"+QString::number(counter)+".png";
 
         QImage resultImage;
 
@@ -110,11 +116,13 @@ bool MainWindow::combineImages()
 
         painter.end();
         resultImage.save(saveFileName);
-        all_images__.push_back(resultImage);
+        allImages__.push_back(resultImage);
+
+        ui->textBrowser->append("#"+QString::number(counter) + " image saved");
         counter += 1;
-        qDebug() << "saved to " << saveFileName << Qt::endl;
     }
 
+    ui->textBrowser->append("All images created");
     return true;
 }
 
@@ -134,19 +142,20 @@ void MainWindow::on_fileselectButton_clicked()
         vec.push_back(dir.absolutePath()+"/"+str);
     }
     if(!vec.empty()){
-        file_directories__.push_back(vec);
+        fileDirectories__.push_back(vec);
+        ui->textBrowser->append(QString::number(vec.size()) + " images added from " + dir.path());
     }
-    if(!file_directories__.empty()){
+    if(!fileDirectories__.empty()){
         updateListWidget();
     }
 }
 
 void MainWindow::initImageViewer()
 {
-    if(all_images__.size() == 0){
+    if(allImages__.size() == 0){
         return;
     }
-    QImage firstImage = all_images__[0];
+    QImage firstImage = allImages__[0];
 
 
     ui->imageLabel->setPixmap(QPixmap::fromImage(firstImage));
@@ -159,16 +168,17 @@ void MainWindow::initImageViewer()
 
 void MainWindow::on_createImagesButton_clicked()
 {
-    combineImages();
-    initImageViewer();
+    if(combineImages()){
+        initImageViewer();
+    }
 }
 
 
 void MainWindow::on_nextImageButton_clicked()
 {
-    if(imageViewerIndex < int(all_images__.size() - 1)){
+    if(imageViewerIndex < int(allImages__.size() - 1)){
         imageViewerIndex += 1;
-        ui->imageLabel->setPixmap(QPixmap::fromImage(all_images__[imageViewerIndex]));
+        ui->imageLabel->setPixmap(QPixmap::fromImage(allImages__[imageViewerIndex]));
         updateImageIndexLabel();
     }
 }
@@ -178,14 +188,25 @@ void MainWindow::on_prevImageButton_clicked()
 {
     if(imageViewerIndex > 0){
         imageViewerIndex -= 1;
-        ui->imageLabel->setPixmap(QPixmap::fromImage(all_images__[imageViewerIndex]));
+        ui->imageLabel->setPixmap(QPixmap::fromImage(allImages__[imageViewerIndex]));
         updateImageIndexLabel();
     }
 }
 
 void MainWindow::updateImageIndexLabel()
 {
-    QString labelText = QString::number(imageViewerIndex+1) + " of " + QString::number(all_images__.size());
+    QString labelText = QString::number(imageViewerIndex+1) + " of " + QString::number(allImages__.size());
     ui->imageIndexLabel->setText(labelText);
+}
+
+
+void MainWindow::on_saveFileButton_clicked()
+{
+    saveFilePath__ = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+                                                         "/home",
+                                                         QFileDialog::ShowDirsOnly
+                                                         | QFileDialog::DontResolveSymlinks);
+
+
 }
 

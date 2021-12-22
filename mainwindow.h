@@ -42,14 +42,19 @@ private slots:
 
     void updateImageIndexLabel();
 
+    void on_saveFileButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
     // selected folders with image paths
-    vector<vector<QString>> file_directories__;
+    vector<vector<QString>> fileDirectories__;
+
+    // Filepath to save created images
+    QString saveFilePath__;
 
     // All created images
-    vector<QImage> all_images__;
+    vector<QImage> allImages__;
 
     // Index of current image on viewer
     int imageViewerIndex = 0;
