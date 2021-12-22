@@ -110,20 +110,10 @@ bool MainWindow::combineImages()
 
         painter.end();
         resultImage.save(saveFileName);
+        all_images__.push_back(resultImage);
         counter += 1;
         qDebug() << "saved to " << saveFileName << Qt::endl;
     }
-
-
-
-
-
-
-
-//    ui->imageLabel->setPixmap(QPixmap::fromImage(resultImage));
-//    ui->imageLabel->setScaledContents( true );
-
-//    ui->imageLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
 
     return true;
 }
@@ -140,7 +130,7 @@ void MainWindow::on_fileselectButton_clicked()
     QStringList image_list = dir.entryList(QStringList() << "*.jpg" << "*.JPG" << "*.png", QDir::Files);
 
     vector<QString> vec;
-    for(QString str : image_list){
+    for(QString& str : image_list){
         vec.push_back(dir.absolutePath()+"/"+str);
     }
     if(!vec.empty()){
@@ -151,9 +141,51 @@ void MainWindow::on_fileselectButton_clicked()
     }
 }
 
+void MainWindow::initImageViewer()
+{
+    if(all_images__.size() == 0){
+        return;
+    }
+    QImage firstImage = all_images__[0];
+
+
+    ui->imageLabel->setPixmap(QPixmap::fromImage(firstImage));
+    ui->imageLabel->setScaledContents(true);
+    ui->imageLabel->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+
+    updateImageIndexLabel();
+
+}
 
 void MainWindow::on_createImagesButton_clicked()
 {
     combineImages();
+    initImageViewer();
+}
+
+
+void MainWindow::on_nextImageButton_clicked()
+{
+    if(imageViewerIndex < int(all_images__.size() - 1)){
+        imageViewerIndex += 1;
+        ui->imageLabel->setPixmap(QPixmap::fromImage(all_images__[imageViewerIndex]));
+        updateImageIndexLabel();
+    }
+}
+
+
+void MainWindow::on_prevImageButton_clicked()
+{
+    if(imageViewerIndex > 0){
+        imageViewerIndex -= 1;
+        ui->imageLabel->setPixmap(QPixmap::fromImage(all_images__[imageViewerIndex]));
+        updateImageIndexLabel();
+    }
+}
+
+void MainWindow::updateImageIndexLabel()
+{
+    QString labelText = QString::number(imageViewerIndex+1) + " of " + QString::number(all_images__.size());
+    ui->imageIndexLabel->setText(labelText);
 }
 

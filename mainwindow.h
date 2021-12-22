@@ -29,18 +29,30 @@ public:
 
     bool combineImages();
 
+    void initImageViewer();
+
 private slots:
     void on_fileselectButton_clicked();
 
     void on_createImagesButton_clicked();
 
+    void on_nextImageButton_clicked();
+
+    void on_prevImageButton_clicked();
+
+    void updateImageIndexLabel();
+
 private:
     Ui::MainWindow *ui;
 
-    // current selected files
-
+    // selected folders with image paths
     vector<vector<QString>> file_directories__;
 
+    // All created images
+    vector<QImage> all_images__;
+
+    // Index of current image on viewer
+    int imageViewerIndex = 0;
 
 };
 #endif // MAINWINDOW_H
