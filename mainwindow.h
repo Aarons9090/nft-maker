@@ -4,8 +4,10 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <bits/stdc++.h>
+#include <algorithm>
 #include <unordered_set>
 #include <QPainter>
+#include <QDebug>
 
 using namespace std;
 
@@ -36,7 +38,9 @@ private:
     Ui::MainWindow *ui;
 
     // current selected files
-    QStringList filenames__;
+
+    vector<vector<QString>> file_directories__;
+
 
 };
 #endif // MAINWINDOW_H
