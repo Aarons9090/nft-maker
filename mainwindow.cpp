@@ -6,9 +6,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-
-
     ui->textBrowser->append("Application started");
     ui->textBrowser->append("Start by selecting folders with images");
 }
@@ -61,8 +58,6 @@ bool MainWindow::combineImages()
 
         combinations.push_back(vec);
 
-
-
         // find the rightmost array that has more
         // elements left after the current element
         // in that array
@@ -84,30 +79,30 @@ bool MainWindow::combineImages()
         // first element
         for (int i = next + 1; i < n; i++)
             indices[i] = 0;
-
     }
 
+    delete[] indices;
     int counter = 1;
 
-
+    // update text browser
     ui->textBrowser->append(QString::number(combinations.size()) + " combinations created");
 
+    // all created images will have the same size as first image
+    QSize size = QImage(combinations[0][0]).size();
 
-
-
-
-
-
+    // creating combinations
     for(vector<QString> &vec : combinations){
+        // determine savefile name
         QString saveFileName = saveFilePath__+"/"+QString::number(counter)+".png";
 
         QImage resultImage;
 
-        resultImage = QImage(QSize(100,100), QImage::Format_ARGB32_Premultiplied);
+        resultImage = QImage(size, QImage::Format_ARGB32_Premultiplied);
 
         QPainter painter(&resultImage);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
+        // combine all pngs
         for(QString &path : vec){
             qDebug() << path << Qt::endl;
             QImage img(path);
@@ -115,6 +110,8 @@ bool MainWindow::combineImages()
         }
 
         painter.end();
+
+        // save image to file
         resultImage.save(saveFileName);
         allImages__.push_back(resultImage);
 
@@ -123,12 +120,15 @@ bool MainWindow::combineImages()
     }
 
     ui->textBrowser->append("All images created");
+
     return true;
 }
 
 
 void MainWindow::on_fileselectButton_clicked()
 {
+
+    // set file to save generated images
 
     QDir dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                                  "/home",
@@ -152,6 +152,7 @@ void MainWindow::on_fileselectButton_clicked()
 
 void MainWindow::initImageViewer()
 {
+    // start image browser
     if(allImages__.size() == 0){
         return;
     }
@@ -206,7 +207,6 @@ void MainWindow::on_saveFileButton_clicked()
                                                          "/home",
                                                          QFileDialog::ShowDirsOnly
                                                          | QFileDialog::DontResolveSymlinks);
-
 
 }
 
